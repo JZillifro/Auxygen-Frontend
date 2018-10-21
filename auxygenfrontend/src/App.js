@@ -29,6 +29,31 @@ class App extends Component {
             }
         });
      });
+
+     this.loadData = this.loadData.bind(this);
+  }
+
+  componentDidMount() {
+    this.loadData();
+    setInterval(this.loadData, 30000);
+  }
+
+  async loadData() {
+    try {
+      spotifyApi.getMyCurrentPlaybackState()
+      .then((response) => {
+         this.setState({
+           nowPlaying: {
+              name: response.item.name,
+              albumArt: response.item.album.images[0].url,
+              artist: response.item.artists[0].name
+             }
+         });
+      });
+
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   getHashParams() {
@@ -79,7 +104,7 @@ class App extends Component {
      const uris = [uri]
      spotifyApi.addTracksToPlaylist(playlist,uris)
       .then((response) => {
-         console.log(response)
+         this.setState({songs : []})
       }).catch(err => {
          console.log(err)
       });
