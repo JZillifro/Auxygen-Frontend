@@ -146,8 +146,12 @@ class App extends Component {
                 </form>
                 {
                   this.state.songs && this.state.songs.map(song => (
-                      <div>
-                        <a className="button" onClick={() => this.submitSong(song.uri)}>{song.name} by {song.artist}</a>
+                      <div style={{minWidth: '95%', maxWidth: '95%'}}>
+                        <a className="button" onClick={() => this.submitSong(song.uri)}><img src={song.cover_art} style={{borderRadius: '8px', maxWidth: '18%', height: 'auto', float: 'left', marginTop: '1%', marginBottom: '1%'}}/>
+                          <div style={{float: 'center', marginTop: '5%'}}>
+                            {song.name} by {song.artist}
+                          </div>
+                        </a>
                         <br/>
                       </div>
                     )
