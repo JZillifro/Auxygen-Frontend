@@ -1,32 +1,88 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import './html5up-directive/assets/css/main.css';
-import axios from 'axios';
+import SpotifyWebApi from 'spotify-web-api-js';
+const spotifyApi = new SpotifyWebApi();
 
 class App extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {}
+
+  constructor(props){
+    super(props);
+    const params = this.getHashParams();
+    const token = params.access_token;
+    if (token) {
+      spotifyApi.setAccessToken(token);
+    }
+
+    this.state = {
+      loggedIn: token ? true : false,
+      nowPlaying: { name: 'Not Checked', albumArt: '' }
+    }
+
+    spotifyApi.getMyCurrentPlaybackState()
+     .then((response) => {
+        this.setState({
+          nowPlaying: {
+             name: response.item.name,
+             albumArt: response.item.album.images[0].url,
+             artist: response.item.artists[0].name
+            }
+        });
+     });
+  }
+
+  getHashParams() {
+    var hashParams = {};
+    var e, r = /([^&;=]+)=?([^&;]*)/g,
+        q = window.location.hash.substring(1);
+    e = r.exec(q)
+    while (e) {
+       hashParams[e[1]] = decodeURIComponent(e[2]);
+       e = r.exec(q);
+    }
+    return hashParams;
+  }
+
+  toTrack(item) {
+     var track = {};
+     track['name'] = item['name'];
+     track['artist'] = item['artists'][0]['name'];
+     track['uri'] = item['uri'];
+     track['cover_art'] = item['album']['images'][0]['url'];
+     return track;
   }
 
   songSearch() {
-    axios.get('http://localhost:5000/search?song=' + document.getElementById("songtitle").elements[0].value).then(res => {
-      const songs = res.data
-      this.setState({songs})
-    }).catch(err => {
-      console.log(err)
-    });
+     const queryTerm = document.getElementById("songtitle").elements[0].value;
+     spotifyApi.searchTracks(queryTerm, {limit: 10})
+      .then((response) => {
+         this.setState({
+           songs: response['tracks']['items'].map(item => this.toTrack(item))
+         });
+      }).catch(err => {
+         console.log(err)
+      });
 
   }
 
+  skip() {
+     spotifyApi.skipToNext()
+     .then((response) => {
+         console.log(response)
+     }).catch(err => {
+         console.log(err)
+     });
+ }
+
   submitSong(uri) {
-    // this.setState({songs=[]})
-    axios.post('http://localhost:5000/add_song?track_uri=' + uri).then(res => (
-      console.log(res)
-    )).catch(err => {
-      console.log(err)
-    });
+     const playlist = '3XnJJ3aPN4RJTpBOzoNt92';
+     const uris = [uri]
+     spotifyApi.addTracksToPlaylist(playlist,uris)
+      .then((response) => {
+         console.log(response)
+      }).catch(err => {
+         console.log(err)
+      });
   }
 
   render() {
@@ -38,10 +94,10 @@ class App extends Component {
           <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
           <link rel="stylesheet" href="assets/css/main.css" />
         </head>
-        <body class="is-preload">
+        <body className="is-preload">
 
             <div id="header">
-              <span class="logo icon fa-music"></span>
+              <span className="logo icon fa-music"></span>
               <h1>Auxygen</h1>
               <p>Control the flow of the party.</p>
             </div>
@@ -58,12 +114,12 @@ class App extends Component {
                 etiam vivamus nunc nibh morbi.</p>
               </header> */}
 
-              <div class="box alt container">
-                <section class="feature left">
-                  <a href="#" class="image icon fa-thumbs-up"><img src="https://img.discogs.com/_Ys4oxfbTXmWIRZtRdCjf2HoPnM=/fit-in/600x520/filters:strip_icc():format(jpeg):mode_rgb():quality(90)/discogs-images/R-10099368-1495223837-7850.jpeg.jpg" alt="" style={{width:"100", height:"100"}} /></a>
-                  <div class="content">
-                    <h3>Song Title</h3>
-                    <p>Artist Name</p>
+              <div className="box alt container">
+                <section className="feature left">
+                  <a href="#" className="image icon fa-thumbs-up"><img src={this.state.nowPlaying.albumArt} alt="" style={{width:"100", height:"100"}} /></a>
+                  <div className="content">
+                    <h3>{this.state.nowPlaying.name}</h3>
+                    <p>{this.state.nowPlaying.artist}</p>
                   </div>
                 </section>
               </div>
@@ -79,8 +135,8 @@ class App extends Component {
             </div>
 
             <div id="footer">
-              <div class="container medium">
-                <header class="major last">
+              <div className="container medium">
+                <header className="major last">
                   <h2>YOU DECIDE</h2>
                 </header>
                 <form id="songtitle">
@@ -102,7 +158,7 @@ class App extends Component {
                 <br/><br/>
                 <a className="button">VOLUME DOWN <i className="icon fa-volume-down"/></a>
                 <br/><br/>
-                <a className="button">SKIP SONG <i className="icon fa-angle-double-right"/></a>
+                <a className="button" onClick={() => this.skip()}>SKIP SONG <i className="icon fa-angle-double-right"/></a>
 
               </div>
             </div>
