@@ -115,8 +115,9 @@ class App extends Component {
               </header> */}
 
               <div className="box alt container">
+                <h2>Current Song</h2>
                 <section className="feature left">
-                  <a href="#" className="image icon fa-thumbs-up"><img src={this.state.nowPlaying.albumArt} alt="" style={{width:"100", height:"100"}} /></a>
+                  <img src={this.state.nowPlaying.albumArt} alt="" style={{maxHeight: '450px', maxWidth: '450px', height: 'automatic', width: 'automatic'}}/>
                   <div className="content">
                     <h3>{this.state.nowPlaying.name}</h3>
                     <p>{this.state.nowPlaying.artist}</p>
@@ -157,10 +158,6 @@ class App extends Component {
                     )
                   )
                 }
-                <br/><br/>
-                <a className="button">VOLUME UP <i className="icon fa-volume-up"/></a>
-                <br/><br/>
-                <a className="button">VOLUME DOWN <i className="icon fa-volume-down"/></a>
                 <br/><br/>
                 <a className="button" onClick={() => this.skip()}>SKIP SONG <i className="icon fa-angle-double-right"/></a>
 
